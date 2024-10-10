@@ -75,7 +75,7 @@ def remove_song_from_playlist(playlist_id, song_id):
     return jsonify({"message": "Song removed from playlist"}), 200
 
 
-@song_bp.route("/songs/<int:artist_id>/artist", methods=["GET"])
+@song_bp.route("/songs/artist/<int:artist_id>", methods=["GET"])
 @swag_from(songs_by_artist)
 def get_songs_by_artist(artist_id):
     artist = Artist.query.get_or_404(artist_id)

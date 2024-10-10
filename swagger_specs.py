@@ -158,7 +158,7 @@ song_create = {
 add_song_to_playlist = {
     "operationId": "addSongToPlaylist",
     "summary": "Add a song to a playlist",
-    "tags": ["Playlists", "Songs"],
+    "tags": ["Links"],
     "parameters": [
         {
             "name": "id",
@@ -187,7 +187,7 @@ add_song_to_playlist = {
 remove_song_from_playlist = {
     "operationId": "removeSongFromPlaylist",
     "summary": "Remove a song from a playlist",
-    "tags": ["Playlists", "Songs"],
+    "tags": ["Links"],
     "parameters": [
         {
             "name": "playlist_id",
