@@ -2,9 +2,13 @@ from app import app, db
 from models import Playlist, Song, PlaylistSong
 from flask import request, jsonify
 from sqlalchemy import text
+from flasgger.utils import swag_from
+
+from swagger_specs import playlist_get_all, playlist_create, playlist_get_by_id, playlist_delete, song_get_all, song_create, add_song_to_playlist, remove_song_from_playlist, playlists_by_genre 
 
 # Get all playlists
 @app.route('/playlists', methods=['GET'])
+@swag_from(playlist_get_all)
 def get_playlists():
     playlists = Playlist.query.all()
     result = [
@@ -19,6 +23,7 @@ def get_playlists():
 
 # Create a new playlist
 @app.route('/playlists', methods=['POST'])
+@swag_from(playlist_create)
 def create_playlist():
     data = request.get_json()
     new_playlist = Playlist(
@@ -31,6 +36,7 @@ def create_playlist():
 
 # Get a specific playlist
 @app.route('/playlists/<int:id>', methods=['GET'])
+@swag_from(playlist_get_by_id)
 def get_playlist(id):
     playlist = Playlist.query.get_or_404(id)
     songs = [
@@ -51,13 +57,16 @@ def get_playlist(id):
 
 # Delete a playlist
 @app.route('/playlists/<int:id>', methods=['DELETE'])
+@swag_from(playlist_delete)
 def delete_playlist(id):
     playlist = Playlist.query.get_or_404(id)
     db.session.delete(playlist)
     db.session.commit()
     return jsonify({'message': 'Playlist deleted successfully'}), 200
 
+# Get song list
 @app.route('/songs', methods=['GET'])
+@swag_from(song_get_all)
 def get_songs():
     songs = Song.query.all()
     result = [
@@ -70,8 +79,9 @@ def get_songs():
     ]
     return jsonify(result), 200
 
-# Create a new playlist
+# Create a new song
 @app.route('/songs', methods=['POST'])
+@swag_from(song_create)
 def create_song():
     data = request.get_json()
     new_song = Song(
@@ -85,6 +95,7 @@ def create_song():
 
 # Add a song to a playlist
 @app.route('/playlists/<int:id>/songs', methods=['POST'])
+@swag_from(add_song_to_playlist)
 def add_song_to_playlist(id):
     data = request.get_json()
     song_id = data['song_id']
@@ -105,6 +116,7 @@ def add_song_to_playlist(id):
 
 # Remove a song from a playlist
 @app.route('/playlists/<int:playlist_id>/songs/<int:song_id>', methods=['DELETE'])
+@swag_from(remove_song_from_playlist)
 def remove_song_from_playlist(playlist_id, song_id):
     entry = PlaylistSong.query.filter_by(
         playlist_id=playlist_id, song_id=song_id
@@ -116,6 +128,7 @@ def remove_song_from_playlist(playlist_id, song_id):
 
 # Get playlists containing songs of a specific genre
 @app.route('/playlists/genre/<string:genre>', methods=['GET'])
+@swag_from(playlists_by_genre)
 def get_playlists_by_genre(genre):
     sql_query = text("""
     SELECT DISTINCT playlist.id, playlist.name, playlist.description
