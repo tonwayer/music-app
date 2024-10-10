@@ -62,7 +62,7 @@ def get_songs():
     result = [
         {
             'id': song.id,
-            'name': song.name,
+            'name': song.title,
             'genre': song.genre
         }
         for song in songs
@@ -74,8 +74,8 @@ def get_songs():
 def create_song():
     data = request.get_json()
     new_song = Song(
-        name=data['name'],
-        description=data.get('genre', '')
+        title=data['title'],
+        genre=data.get('genre', '')
     )
     db.session.add(new_song)
     db.session.commit()
