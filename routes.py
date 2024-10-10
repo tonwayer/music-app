@@ -1,5 +1,5 @@
 from app import app, db
-from models import Playlist
+from models import Playlist, Song, PlaylistSong
 from flask import request, jsonify
 
 # Get all playlists
@@ -32,10 +32,19 @@ def create_playlist():
 @app.route('/playlists/<int:id>', methods=['GET'])
 def get_playlist(id):
     playlist = Playlist.query.get_or_404(id)
+    songs = [
+        {
+            'id': ps.song.id,
+            'title': ps.song.title,
+            'genre': ps.song.genre
+        }
+        for ps in playlist.songs
+    ]
     result = {
         'id': playlist.id,
         'name': playlist.name,
         'description': playlist.description,
+        'songs': songs
     }
     return jsonify(result), 200
 
@@ -46,3 +55,58 @@ def delete_playlist(id):
     db.session.delete(playlist)
     db.session.commit()
     return jsonify({'message': 'Playlist deleted successfully'}), 200
+
+@app.route('/songs', methods=['GET'])
+def get_songs():
+    songs = Song.query.all()
+    result = [
+        {
+            'id': song.id,
+            'name': song.name,
+            'genre': song.genre
+        }
+        for song in songs
+    ]
+    return jsonify(result), 200
+
+# Create a new playlist
+@app.route('/songs', methods=['POST'])
+def create_song():
+    data = request.get_json()
+    new_playlist = Playlist(
+        name=data['name'],
+        description=data.get('genre', '')
+    )
+    db.session.add(new_playlist)
+    db.session.commit()
+    return jsonify({'message': 'Song created successfully'}), 201
+
+# # Add a song to a playlist
+# @app.route('/playlists/<int:id>/songs', methods=['POST'])
+# def add_song_to_playlist(id):
+#     data = request.get_json()
+#     song_id = data['song_id']
+#     playlist = Playlist.query.get_or_404(id)
+#     song = Song.query.get_or_404(song_id)
+
+#     existing_entry = PlaylistSong.query.filter_by(
+#         playlist_id=playlist.id, song_id=song.id
+#     ).first()
+
+#     if existing_entry:
+#         return jsonify({'message': 'Song already in playlist'}), 400
+
+#     new_entry = PlaylistSong(playlist_id=playlist.id, song_id=song.id)
+#     db.session.add(new_entry)
+#     db.session.commit()
+#     return jsonify({'message': 'Song added to playlist'}), 201
+
+# # Remove a song from a playlist
+# @app.route('/playlists/<int:playlist_id>/songs/<int:song_id>', methods=['DELETE'])
+# def remove_song_from_playlist(playlist_id, song_id):
+#     entry = PlaylistSong.query.filter_by(
+#         playlist_id=playlist_id, song_id=song_id
+#     ).first_or_404()
+#     db.session.delete(entry)
+#     db.session.commit()
+#     return jsonify({'message': 'Song removed from playlist'}), 200
