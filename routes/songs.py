@@ -2,7 +2,8 @@ from models import Artist, db
 from flask import Blueprint, jsonify, request
 from models import Song, Playlist, PlaylistSong
 from flasgger.utils import swag_from
-from swagger_specs import song_get_all, song_create, add_song_to_playlist, remove_song_from_playlist, songs_by_artist
+from sqlalchemy import text
+from swagger_specs import song_get_all, song_create, add_song_to_playlist, remove_song_from_playlist, songs_by_artist, songs_by_genre
 
 song_bp = Blueprint('songs', __name__)
 
@@ -67,7 +68,7 @@ def remove_song_from_playlist(playlist_id, song_id):
     db.session.commit()
     return jsonify({'message': 'Song removed from playlist'}), 200
 
-@song_bp.route('/artists/<int:artist_id>/songs', methods=['GET'])
+@song_bp.route('/songs/<int:artist_id>/artist', methods=['GET'])
 @swag_from(songs_by_artist)
 def get_songs_by_artist(artist_id):
     artist = Artist.query.get_or_404(artist_id)
@@ -84,3 +85,25 @@ def get_songs_by_artist(artist_id):
     ]
     
     return jsonify(result), 200
+
+@song_bp.route('/songs/genre/<string:genre>', methods=['GET'])
+@swag_from(songs_by_genre)
+def get_songs_by_genre(genre):
+    sql_query = text("""
+    SELECT song.id, song.title, song.genre
+    FROM song
+    WHERE song.genre = :genre
+    """)
+    result = db.session.execute(sql_query, {'genre': genre})
+    rows = result.mappings().all()
+
+    songs = [
+        {
+            'id': row['id'],
+            'title': row['title'],
+            'genre': row['genre'],
+        }
+        for row in rows
+    ]
+    
+    return jsonify(songs), 200

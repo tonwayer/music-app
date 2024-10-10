@@ -216,7 +216,7 @@ remove_song_from_playlist = {
 playlists_by_genre = {
     'operationId': 'getPlaylistsByGenre',
     'summary': 'Get playlists by song genre',
-    'tags': ['Playlists'],
+    'tags': ['Group'],
     'parameters': [
         {
             'name': 'genre',
@@ -242,7 +242,6 @@ playlists_by_genre = {
         }
     }
 }
-# swagger_specs.py
 
 # Swagger specs for getting all artists
 artist_get_all = {
@@ -373,7 +372,7 @@ artist_delete = {
 songs_by_artist = {
     'operationId': 'getSongsByArtist',
     'summary': 'Get all songs by a specific artist',
-    'tags': ['Artists', 'Songs'],
+    'tags': ['Group'],
     'parameters': [
         {
             'name': 'artist_id',
@@ -402,3 +401,34 @@ songs_by_artist = {
     }
 }
 
+# Swagger specs for getting songs by genre using raw SQL
+songs_by_genre = {
+    'operationId': 'getSongsByGenre',
+    'summary': 'Get all songs by genre using raw SQL',
+    'tags': ['Group'],
+    'parameters': [
+        {
+            'name': 'genre',
+            'in': 'path',
+            'type': 'string',
+            'required': True,
+            'description': 'Genre of the songs to retrieve'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Songs for the specified genre',
+            'schema': {
+                'type': 'array',
+                'items': {
+                    'properties': {
+                        'id': {'type': 'integer'},
+                        'title': {'type': 'string'},
+                        'genre': {'type': 'string'},
+                    }
+                }
+            }
+        },
+        404: {'description': 'No songs found for the specified genre'}
+    }
+}
