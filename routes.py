@@ -1,6 +1,7 @@
 from app import app, db
 from models import Playlist, Song, PlaylistSong
 from flask import request, jsonify
+from sqlalchemy import text
 
 # Get all playlists
 @app.route('/playlists', methods=['GET'])
@@ -111,3 +112,27 @@ def remove_song_from_playlist(playlist_id, song_id):
     db.session.delete(entry)
     db.session.commit()
     return jsonify({'message': 'Song removed from playlist'}), 200
+
+
+# Get playlists containing songs of a specific genre
+@app.route('/playlists/genre/<string:genre>', methods=['GET'])
+def get_playlists_by_genre(genre):
+    sql_query = text("""
+    SELECT DISTINCT playlist.id, playlist.name, playlist.description
+    FROM playlist
+    JOIN playlist_song ON playlist.id = playlist_song.playlist_id
+    JOIN song ON song.id = playlist_song.song_id
+    WHERE song.genre = :genre
+    """)
+    result = db.session.execute(sql_query, {'genre': genre})
+    rows = result.mappings().all()
+
+    playlists = [
+        {
+            'id': row['id'],
+            'name': row['name'],
+            'description': row['description']
+        }
+        for row in rows
+    ]
+    return jsonify(playlists), 200
